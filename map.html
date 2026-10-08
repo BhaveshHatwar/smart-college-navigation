@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/map.css">
+</head>
+<body class="map-page">
+
+  <!-- ================= HEADER (same as dashboard) ================= -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="dashboard.html" class="brand">
+        <span class="brand-logo">
+          <img src="assets/logo.png" alt="" onerror="this.remove();">
+          GH
+        </span>
+        Smart College Navigation
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="dashboard.html">Home</a>
+        <a href="map.html" class="active">Floors</a>
+        <a href="dashboard.html#search">Search</a>
+        <a href="about.html">About</a>
+        <a href="admin.html" id="adminLink" class="hidden">Admin</a>
+        <a href="#" id="navLogout" class="nav-logout">Logout</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="profile-btn" id="profileBtn" type="button">
+          <span class="avatar" id="avatar">?</span>
+          <span class="p-label" id="headerName">...</span>
+        </button>
+        <button class="btn btn-outline logout-btn" id="logoutBtn" type="button">Logout</button>
+
+        <div class="profile-menu hidden" id="profileMenu">
+          <div class="p-name" id="menuName"></div>
+          <div class="p-email" id="menuEmail"></div>
+          <span class="role-badge" id="menuRole"></span>
+          <a href="admin.html" id="menuAdminLink" class="menu-link hidden">Open Admin Panel</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" type="button" aria-label="Menu">&#9776;</button>
+    </div>
+  </header>
+
+  <!-- ================= FLOOR SELECTOR (always visible) ================= -->
+  <div class="floor-bar">
+    <div class="floor-bar-inner">
+      <span class="floor-bar-label">Floor:</span>
+      <div class="floor-selector" id="floorSelector">
+        <!-- C / D / E / F buttons are created by floor-manager.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN LAYOUT ================= -->
+  <div class="map-layout">
+
+    <!-- MAP AREA -->
+    <section class="map-area">
+      <div class="map-toolbar">
+        <h2 id="mapTitle">Map</h2>
+        <div class="map-controls">
+          <!-- Zoom buttons: connected to JavaScript in Step 7 -->
+          <button type="button" class="btn btn-outline" id="zoomOut" title="Zoom out">&minus;</button>
+          <button type="button" class="btn btn-outline" id="zoomIn" title="Zoom in">+</button>
+          <button type="button" class="btn btn-outline" id="zoomReset" title="Reset zoom">Reset</button>
+          <!-- Connected in Step 14 -->
+          <button type="button" class="btn btn-accent hidden" id="clearRouteBtn">Clear Route</button>
+        </div>
+      </div>
+
+      <div class="map-wrap" id="mapWrap">
+        <div class="map-canvas" id="mapCanvas">
+          <!-- The floor SVG is inserted here -->
+        </div>
+        <!-- Floor-change message (Step 12) -->
+        <div class="floor-toast hidden" id="floorToast"></div>
+      </div>
+        <p class="map-hint">Pinch to zoom &middot; drag to move &middot; tap a room for details.
+        To scroll the page, swipe outside the map.</p>
+    </section>
+
+    <!-- SIDE PANEL (becomes a bottom panel on mobile) -->
+    <aside class="side-panel">
+
+      <!-- Search: connected in Step 10 -->
+      <div class="panel-card">
+        <h3>Search</h3>
+        <input type="text" id="mapSearchInput" placeholder="Room number or name">
+        <div id="mapSearchResults" class="map-search-results"></div>
+      </div>
+
+      <!-- Room details: filled in Step 9 -->
+      <div class="panel-card" id="infoPanel">
+        <p class="panel-empty">Click a room on the map to see its details.</p>
+      </div>
+
+      <!-- Route details: filled in Step 11 -->
+      <div class="panel-card hidden" id="routePanel"></div>
+
+    </aside>
+  </div>
+
+  <script type="module" src="js/map.js"></script>
+</body>
+</html>

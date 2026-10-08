@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="dashboard.html" class="brand">
+        <span class="brand-logo">
+          <img src="assets/logo.png" alt="" onerror="this.remove(); ">
+          GH
+        </span>
+        Smart College Navigation
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="dashboard.html" class="active">Home</a>
+        <a href="#floors">Floors</a>
+        <a href="#search">Search</a>
+        <a href="about.html">About</a>
+        <a href="admin.html" id="adminLink" class="hidden">Admin</a>
+        <a href="#" id="navLogout" class="nav-logout">Logout</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="profile-btn" id="profileBtn" type="button">
+          <span class="avatar" id="avatar">?</span>
+          <span class="p-label" id="headerName">...</span>
+        </button>
+        <button class="btn btn-outline logout-btn" id="logoutBtn" type="button">Logout</button>
+
+        <div class="profile-menu hidden" id="profileMenu">
+          <div class="p-name" id="menuName"></div>
+          <div class="p-email" id="menuEmail"></div>
+          <span class="role-badge" id="menuRole"></span>
+          <a href="admin.html" id="menuAdminLink" class="menu-link hidden">Open Admin Panel</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" type="button" aria-label="Menu">&#9776;</button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN ================= -->
+  <main class="dashboard">
+
+    <section class="welcome">
+      <h1>Welcome, <span id="welcomeName">...</span></h1>
+      <p>Select a floor to open its map, or search for any room in the building.</p>
+    </section>
+
+    <!-- SEARCH -->
+    <section class="search-section" id="search">
+      <h2>Search Location</h2>
+      <form id="searchForm" class="search-form" autocomplete="off">
+        <input type="text" id="searchInput"
+               placeholder="Search a room number or name, e.g. E-10 or CAD/CAE Lab">
+        <button type="submit" class="btn btn-accent">Search</button>
+      </form>
+      <div id="searchMessage" class="alert hidden"></div>
+      <div id="searchResults" class="search-results"></div>
+    </section>
+
+    <!-- FLOOR CARDS -->
+    <section id="floors">
+      <h2>Floors</h2>
+      <div class="floor-grid" id="floorGrid">
+        <!-- Cards are created by dashboard.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Smart Indoor College Navigation &middot; G.H. Raisoni College of Engineering
+  </footer>
+
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

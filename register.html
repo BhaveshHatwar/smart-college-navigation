@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <div class="auth-page">
+
+    <section class="auth-brand">
+      <div class="logo-box">
+        <img src="assets/logo.png" alt="College logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span class="logo-fallback" style="display:none;">GH</span>
+      </div>
+      <h1>Create your account</h1>
+      <p>Students, faculty, visitors and parents can register to use the digital floor maps and indoor navigation.</p>
+      <ul>
+        <li>Free to use</li>
+        <li>Works on laptop, tablet and mobile</li>
+      </ul>
+    </section>
+
+    <section class="auth-form-wrap">
+      <div class="auth-card">
+        <h2>Register Account</h2>
+        <p class="subtitle">It takes less than a minute.</p>
+
+        <div id="message" class="alert hidden"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Your full name" autocomplete="name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password" required>
+              <button type="button" class="toggle-password" data-toggle="password">Show</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-wrap">
+              <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required>
+              <button type="button" class="toggle-password" data-toggle="confirmPassword">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" id="registerBtn" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <div class="auth-divider">Already have an account?</div>
+        <a href="login.html" class="btn btn-outline btn-block">Back to Login</a>
+      </div>
+    </section>
+
+  </div>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

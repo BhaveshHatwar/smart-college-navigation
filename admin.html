@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ================= HEADER (same as the other pages) ================= -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="dashboard.html" class="brand">
+        <span class="brand-logo">
+          <img src="assets/logo.png" alt="" onerror="this.remove();">
+          GH
+        </span>
+        Smart College Navigation
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="dashboard.html">Home</a>
+        <a href="map.html">Floors</a>
+        <a href="dashboard.html#search">Search</a>
+        <a href="about.html">About</a>
+        <a href="admin.html" id="adminLink" class="active hidden">Admin</a>
+        <a href="#" id="navLogout" class="nav-logout">Logout</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="profile-btn" id="profileBtn" type="button">
+          <span class="avatar" id="avatar">?</span>
+          <span class="p-label" id="headerName">...</span>
+        </button>
+        <button class="btn btn-outline logout-btn" id="logoutBtn" type="button">Logout</button>
+
+        <div class="profile-menu hidden" id="profileMenu">
+          <div class="p-name" id="menuName"></div>
+          <div class="p-email" id="menuEmail"></div>
+          <span class="role-badge" id="menuRole"></span>
+          <a href="admin.html" id="menuAdminLink" class="menu-link hidden">Open Admin Panel</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" type="button" aria-label="Menu">&#9776;</button>
+    </div>
+  </header>
+
+  <main class="admin">
+
+    <!-- Shown to non-admins -->
+    <div id="denied" class="alert alert-error hidden">
+      Access denied. Only administrators can open this page.
+      <a href="dashboard.html">Back to the dashboard</a>
+    </div>
+
+    <!-- Shown to admins -->
+    <div id="adminContent" class="hidden">
+      <h1>Admin Panel</h1>
+      <p class="admin-sub">Manage rooms and facilities. Data source:
+        <span class="source-tag" id="sourceTag">...</span></p>
+
+      <div id="adminMessage" class="alert hidden"></div>
+
+      <!-- ===== LOCATIONS ===== -->
+      <section class="admin-card">
+        <h2>Locations</h2>
+
+        <div class="admin-toolbar">
+          <select id="floorFilter" aria-label="Filter by floor">
+            <option value="">All floors</option>
+          </select>
+          <input type="text" id="textFilter" placeholder="Filter by room number or name">
+          <button type="button" class="btn btn-accent" id="addBtn">+ Add Location</button>
+          <button type="button" class="btn btn-outline hidden" id="seedBtn">Copy demo data to Firestore</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Room</th><th>Name</th><th>Floor</th><th>Type</th>
+                <th>Nav node</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="count-label" id="countLabel"></p>
+      </section>
+
+      <!-- ===== USERS ===== -->
+      <section class="admin-card">
+        <h2>Users</h2>
+        <button type="button" class="btn btn-outline" id="loadUsersBtn">Load users</button>
+        <div class="table-wrap hidden" id="usersWrap">
+          <table class="admin-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ================= ADD / EDIT FORM ================= -->
+  <div class="modal hidden" id="modal">
+    <div class="modal-box">
+      <h2 id="modalTitle">Add Location</h2>
+      <div id="formError" class="alert alert-error hidden"></div>
+
+      <form id="locForm" novalidate>
+        <div class="form-group">
+          <label for="fId">Room Number</label>
+          <input type="text" id="fId" placeholder="e.g. E-10">
+        </div>
+        <div class="form-group">
+          <label for="fName">Room Name</label>
+          <input type="text" id="fName" placeholder="e.g. CAD/CAE Lab">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fFloor">Floor</label>
+            <select id="fFloor"></select>
+          </div>
+          <div class="form-group">
+            <label for="fType">Type</label>
+            <select id="fType"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="fDesc">Description</label>
+          <textarea id="fDesc" rows="3" placeholder="Short description"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="fNode">Navigation Node</label>
+          <input type="text" id="fNode" placeholder="e.g. E-node-10">
+          <small class="hint">Normal rooms use <code>E-node-10</code>. Lift and stairs use their own id, such as <code>E-LIFT</code>.</small>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

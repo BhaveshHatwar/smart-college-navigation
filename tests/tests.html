@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automated tests - Smart College Navigation</title>
+  <style>
+    body { font-family: "Segoe UI", Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; color: #2b2b2b; }
+    h1 { color: #5b2a86; }
+    h2 { color: #5b2a86; border-bottom: 2px solid #f58220; padding-bottom: 4px; margin-top: 28px; }
+    #summary { padding: 14px 18px; border-radius: 10px; font-weight: 700; font-size: 1.1rem; background: #f1eaf8; }
+    #summary.ok  { background: #e8f5e9; color: #2e7d32; }
+    #summary.bad { background: #fdecea; color: #c62828; }
+    .row { padding: 4px 0; font-size: 0.95rem; }
+    .row.pass::before { content: "\2713  "; color: #2e7d32; font-weight: 700; }
+    .row.fail::before { content: "\2717  "; color: #c62828; font-weight: 700; }
+    .row.fail { color: #c62828; }
+    .detail { display: block; margin-left: 22px; color: #6b6b6b; font-size: 0.85rem; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Automated tests</h1>
+  <div id="summary">Running tests... (the route sweep can take a few seconds)</div>
+  <div id="out"></div>
+
+  <script type="module">
+    // ------------------------------------------------------------
+    // Imports: the same files the real app uses.
+    // These tests read the DEMO data files, not Firestore.
+    // ------------------------------------------------------------
+    import { allLocations, validateLocations, getLocationById } from "../data/locations.js";
+    import { floors } from "../data/floors.js";
+    import { getGraph } from "../data/nav-graph.js";
+    import { findRoute } from "../js/navigation.js";
+
+    const out = document.getElementById("out");
+    const summary = document.getElementById("summary");
+    let passed = 0;
+    let failed = 0;
+
+    // ----- Tiny test helpers -----
+    function section(title) {
+      const h = document.createElement("h2");
+      h.textContent = title;
+      out.appendChild(h);
+    }
+
+    /** Record one check. detail is shown only when the check fails. */
+    function check(name, condition, detail = "") {
+      const row = document.createElement("div");
+      row.className = "row " + (condition ? "pass" : "fail");
+      row.textContent = name;
+      if (!condition && detail) {
+        const d = document.createElement("span");
+        d.className = "detail";
+        d.textContent = detail;
+        row.appendChild(d);
+      }
+      out.appendChild(row);
+      condition ? passed++ : failed++;
+    }
+
+    /** Run a group of checks. A crash inside it is reported as a failure. */
+    async function group(title, fn) {
+      section(title);
+      try {
+        await fn();
+      } catch (error) {
+        check("The test group crashed", false, String(error && error.stack || error));
+      }
+    }
+
+    const graph = getGraph();
+    const levelOf = (id) => floors.find((f) => f.id === id).level;
+    const legFloors = (route) => route.legs.map((l) => l.floor).join("");
+
+
+    // ============================================================
+    // 1. DATA
+    // ============================================================
+    await group("1. Location data", () => {
+      const problems = validateLocations();
+      check("validateLocations() finds no problems", problems.length === 0, problems.slice(0, 5).join(" | "));
+
+      const counts = floors.map((f) => allLocations.filter((l) => l.floor === f.id).length);
+      check("Every floor has the same number of locations",
+            counts.every((c) => c === counts[0]), "Counts per floor: " + counts.join(", "));
+
+      const nodeIds = allLocations.map((l) => l.nodeId);
+      check("Every nodeId is unique", new Set(nodeIds).size === nodeIds.length);
+
+      // Floors C, D, E, F must contain the same room suffixes (10, 24, LIFT ...)
+      const suffixes = (floor) => allLocations.filter((l) => l.floor === floor)
+        .map((l) => l.id.slice(floor.length + 1)).sort().join(",");
+      const base = suffixes(floors[0].id);
+      floors.forEach((f) => check(`${f.name} has the same room list as ${floors[0].name}`, suffixes(f.id) === base));
+
+      check("getLocationById is case-insensitive", getLocationById("e-10") === getLocationById("E-10") && !!getLocationById("E-10"));
+      check("getLocationById returns nothing for a wrong id", getLocationById("Z-99") === undefined);
+    });
+
+
+    // ============================================================
+    // 2. NAVIGATION GRAPH
+    // ============================================================
+    await group("2. Navigation graph", () => {
+      const missing = allLocations.filter((l) => !graph.nodes[l.nodeId]);
+      check("Every location has a node in the graph", missing.length === 0, missing.map((l) => l.id).join(", "));
+
+      const vertical = graph.edges.filter((e) => e.type !== "walk");
+      const expected = (floors.length - 1) * 5;           // 1 lift + 4 stairs per floor pair
+      check(`Vertical edges = ${expected}`, vertical.length === expected, "Found " + vertical.length);
+      check("Lift edges = " + (floors.length - 1), vertical.filter((e) => e.type === "lift").length === floors.length - 1);
+      check("Stair edges = " + (floors.length - 1) * 4, vertical.filter((e) => e.type === "stairs").length === (floors.length - 1) * 4);
+
+      // Floors may only be linked to their NEIGHBOUR (no C to F jump)
+      const jumps = vertical.filter((e) =>
+        Math.abs(levelOf(graph.nodes[e.from].floor) - levelOf(graph.nodes[e.to].floor)) !== 1);
+      check("Vertical edges only join neighbouring floors", jumps.length === 0);
+
+      // Edges must work in both directions, with the same weight
+      const asymmetric = [];
+      Object.keys(graph.adjacency).forEach((a) => {
+        graph.adjacency[a].forEach((edge) => {
+          const back = graph.adjacency[edge.to].find((e) => e.to === a && e.type === edge.type);
+          if (!back || Math.abs(back.weight - edge.weight) > 1e-9) asymmetric.push(a + "->" + edge.to);
+        });
+      });
+      check("Every edge works in both directions", asymmetric.length === 0, asymmetric.slice(0, 5).join(", "));
+
+      const badWeights = graph.edges.filter((e) => !Number.isFinite(e.weight) || e.weight < 0);
+      check("No negative or invalid edge weights", badWeights.length === 0);
+
+      // Is the whole building ONE connected graph? (simple flood fill)
+      const start = Object.keys(graph.nodes)[0];
+      const seen = new Set([start]);
+      const queue = [start];
+      while (queue.length) {
+        const current = queue.shift();
+        graph.adjacency[current].forEach((e) => {
+          if (!seen.has(e.to)) { seen.add(e.to); queue.push(e.to); }
+        });
+      }
+      const total = Object.keys(graph.nodes).length;
+      check("The graph is one connected piece", seen.size === total, `${seen.size} of ${total} nodes reachable`);
+    });
+
+
+    // ============================================================
+    // 3. SVG MAPS  (match the data)
+    // ============================================================
+    await group("3. SVG maps", async () => {
+      for (const floor of floors) {
+        try {
+          const response = await fetch("../" + floor.svgFile);
+          check(`${floor.name}: ${floor.svgFile} loads`, response.ok, "HTTP " + response.status);
+          if (!response.ok) continue;
+
+          const doc = new DOMParser().parseFromString(await response.text(), "image/svg+xml");
+          check(`${floor.name}: is valid SVG`, !doc.querySelector("parsererror"));
+
+          const svgIds = [...doc.querySelectorAll("[data-room]")].map((e) => e.getAttribute("data-room"));
+          const dataIds = allLocations.filter((l) => l.floor === floor.id).map((l) => l.id);
+
+          const noShape = dataIds.filter((id) => !svgIds.includes(id));
+          const noData = svgIds.filter((id) => !getLocationById(id));
+          check(`${floor.name}: every location has a shape on the map`, noShape.length === 0, noShape.join(", "));
+          check(`${floor.name}: every shape has a location`, noData.length === 0, noData.join(", "));
+          check(`${floor.name}: no duplicate room ids on the map`, new Set(svgIds).size === svgIds.length);
+          check(`${floor.name}: has an empty #route-layer`, !!doc.querySelector("#route-layer"));
+        } catch (error) {
+          check(`${floor.name}: map could not be tested`, false, String(error));
+        }
+      }
+    });
+
+
+    // ============================================================
+    // 4. ROUTES: hand-picked cases
+    // ============================================================
+    await group("4. Routes: specific cases", () => {
+      // Same floor
+      let r = findRoute("E-24", "E-10");
+      check("Same floor E-24 to E-10 works", r.ok);
+      check("   ...one floor, no floor change", r.ok && r.legs.length === 1 && r.transitions.length === 0);
+      check("   ...has a positive distance", r.ok && r.meters > 0 && r.minutes > 0);
+
+      // Distance is the same in both directions
+      const back = findRoute("E-10", "E-24");
+      check("E-10 to E-24 has the same distance as E-24 to E-10",
+            r.ok && back.ok && Math.abs(r.meters - back.meters) < 0.01);
+
+      // One floor apart
+      r = findRoute("E-10", "F-24");
+      check("E-10 to F-24: floors are E then F", r.ok && legFloors(r) === "EF" && r.transitions.length === 1);
+
+      // C to F (the example from your brief)
+      r = findRoute("C-10", "F-24");
+      check("C-10 to F-24: floors are C, D, E, F in order", r.ok && legFloors(r) === "CDEF");
+      check("   ...3 floor changes", r.ok && r.transitions.length === 3);
+
+      // Going down
+      r = findRoute("F-24", "C-10");
+      check("F-24 to C-10: floors are F, E, D, C in order", r.ok && legFloors(r) === "FEDC");
+
+      // Skipping a floor
+      r = findRoute("C-10", "E-24");
+      check("C-10 to E-24 passes through D (no jumping)", r.ok && legFloors(r) === "CDE");
+
+      // Route types
+      const fast = findRoute("C-10", "F-24", "fastest");
+      const lift = findRoute("C-10", "F-24", "lift");
+      const stairs = findRoute("C-10", "F-24", "stairs");
+      check("Lift only: every floor change uses the lift",
+            lift.ok && lift.transitions.length === 3 && lift.transitions.every((t) => t.type === "lift"));
+      check("Stairs only: every floor change uses stairs",
+            stairs.ok && stairs.transitions.length === 3 && stairs.transitions.every((t) => t.type === "stairs"));
+      check("Fastest is never slower than lift-only or stairs-only",
+            fast.ok && fast.minutes <= lift.minutes + 1e-9 && fast.minutes <= stairs.minutes + 1e-9,
+            `fastest ${fast.minutes?.toFixed(2)}, lift ${lift.minutes?.toFixed(2)}, stairs ${stairs.minutes?.toFixed(2)}`);
+
+      // Errors
+      check("Same start and destination is refused", findRoute("E-10", "E-10").ok === false);
+      check("Unknown start is refused", findRoute("Z-99", "E-10").ok === false);
+      check("Unknown destination is refused", findRoute("E-10", "Z-99").ok === false);
+    });
+
+
+    // ============================================================
+    // 5. ROUTE SWEEP: many routes, every rule checked on each
+    // ============================================================
+    await group("5. Route sweep (every room, three route types)", () => {
+      const starts = ["C-10", "F-24"];                   // one low start and one high start
+      const modes = ["fastest", "lift", "stairs"];
+      let count = 0;
+      const problems = [];
+
+      for (const startId of starts) {
+        for (const loc of allLocations) {
+          if (loc.id === startId) continue;
+          for (const mode of modes) {
+            count++;
+            const label = `${startId} -> ${loc.id} (${mode})`;
+            const r = findRoute(startId, loc.id, mode);
+
+            if (!r.ok) { problems.push(label + ": no route (" + r.error + ")"); continue; }
+
+            // 1. Never walk THROUGH a room (only the first and last node may be rooms)
+            const inner = r.nodes.slice(1, -1);
+            if (inner.some((n) => n.kind === "room")) problems.push(label + ": passes through a room");
+
+            // 2. Floors change one step at a time
+            for (let i = 1; i < r.legs.length; i++) {
+              if (Math.abs(levelOf(r.legs[i].floor) - levelOf(r.legs[i - 1].floor)) !== 1) {
+                problems.push(label + ": jumps between floors");
+                break;
+              }
+            }
+
+            // 3. Route type is respected
+            if (mode === "lift" && r.transitions.some((t) => t.type !== "lift")) problems.push(label + ": used stairs");
+            if (mode === "stairs" && r.transitions.some((t) => t.type !== "stairs")) problems.push(label + ": used the lift");
+
+            // 4. Starts and ends in the right places
+            if (r.nodes[0].id !== r.start.nodeId || r.nodes[r.nodes.length - 1].id !== r.end.nodeId) {
+              problems.push(label + ": wrong first or last node");
+            }
+
+            // 5. Sensible numbers
+            if (!(r.minutes > 0) || !Number.isFinite(r.meters)) problems.push(label + ": invalid distance or time");
+          }
+        }
+      }
+      check(`${count} routes found and valid`, problems.length === 0,
+            `${problems.length} problem(s). First ones: ` + problems.slice(0, 5).join(" | "));
+    });
+
+
+    // ============================================================
+    // SUMMARY
+    // ============================================================
+    summary.textContent = `${passed} passed, ${failed} failed`;
+    summary.className = failed === 0 ? "ok" : "bad";
+  </script>
+</body>
+</html>

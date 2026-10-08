@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <div class="auth-page">
+
+    <!-- LEFT: branding -->
+    <section class="auth-brand">
+      <div class="logo-box">
+        <!-- If assets/logo.png is missing, the "GH" text is shown instead -->
+        <img src="assets/logo.png" alt="College logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span class="logo-fallback" style="display:none;">GH</span>
+      </div>
+      <h1>Smart Indoor College Navigation</h1>
+      <p>Find any room, laboratory or office in the G.H. Raisoni College of Engineering building using interactive digital floor maps.</p>
+      <ul>
+        <li>Interactive C, D, E and F floor maps</li>
+        <li>Search rooms across all floors</li>
+        <li>Shortest indoor route, including stairs and lift</li>
+      </ul>
+    </section>
+
+    <!-- RIGHT: login form -->
+    <section class="auth-form-wrap">
+      <div class="auth-card">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Log in to open the college map.</p>
+
+        <!-- Messages appear here -->
+        <div id="message" class="alert hidden"></div>
+
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" placeholder="Your password" autocomplete="current-password" required>
+              <button type="button" class="toggle-password" data-toggle="password">Show</button>
+            </div>
+          </div>
+
+          <div class="auth-links">
+            <span></span>
+            <button type="button" id="forgotBtn" class="link-button">Forgot password?</button>
+          </div>
+
+          <button type="submit" id="loginBtn" class="btn btn-primary btn-block">Login</button>
+        </form>
+
+        <div class="auth-divider">New to the system?</div>
+        <a href="register.html" class="btn btn-outline btn-block">Create Account</a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- type="module" is required because auth.js uses import statements -->
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - Smart College Navigation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="dashboard.html" class="brand">
+        <span class="brand-logo">
+          <img src="assets/logo.png" alt="" onerror="this.remove();">
+          GH
+        </span>
+        Smart College Navigation
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="dashboard.html">Home</a>
+        <a href="map.html">Floors</a>
+        <a href="dashboard.html#search">Search</a>
+        <a href="about.html" class="active">About</a>
+        <a href="admin.html" id="adminLink" class="hidden">Admin</a>
+        <a href="#" id="navLogout" class="nav-logout">Logout</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="profile-btn" id="profileBtn" type="button">
+          <span class="avatar" id="avatar">?</span>
+          <span class="p-label" id="headerName">...</span>
+        </button>
+        <button class="btn btn-outline logout-btn" id="logoutBtn" type="button">Logout</button>
+
+        <div class="profile-menu hidden" id="profileMenu">
+          <div class="p-name" id="menuName"></div>
+          <div class="p-email" id="menuEmail"></div>
+          <span class="role-badge" id="menuRole"></span>
+          <a href="admin.html" id="menuAdminLink" class="menu-link hidden">Open Admin Panel</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" type="button" aria-label="Menu">&#9776;</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+
+    <section class="welcome">
+      <h1>About the Project</h1>
+      <p>Smart Indoor College Navigation System</p>
+    </section>
+
+    <section class="about-card">
+      <h2>Purpose</h2>
+      <p>To provide students, faculty and visitors with an easy digital way to locate rooms,
+         laboratories, offices and facilities inside the college building.</p>
+    </section>
+
+    <div class="about-grid">
+      <section class="about-card">
+        <h2>Features</h2>
+        <ul>
+          <li>Interactive floor maps</li>
+          <li>Four-floor navigation (C, D, E and F)</li>
+          <li>Search locations on every floor</li>
+          <li>Room information</li>
+          <li>Indoor route calculation</li>
+          <li>Stair and lift navigation</li>
+          <li>Responsive interface</li>
+        </ul>
+      </section>
+
+      <section class="about-card">
+        <h2>How to use it</h2>
+        <ul>
+          <li>Pick a floor, or search for a room.</li>
+          <li>Tap a room to see its details.</li>
+          <li>Press <strong>Navigate Here</strong> and choose where you are.</li>
+          <li>Follow the orange route. It switches floors through the lift or stairs.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="about-card">
+      <h2>Technology</h2>
+      <p>HTML, CSS and JavaScript on the front end. Firebase Authentication and Firestore on the back end.
+         Maps are SVG. Routes are found with Dijkstra's shortest-path algorithm on a corridor graph.</p>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Smart Indoor College Navigation &middot; G.H. Raisoni College of Engineering
+  </footer>
+
+  <script type="module" src="js/about.js"></script>
+</body>
+</html>
